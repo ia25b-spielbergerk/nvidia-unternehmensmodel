@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NVIDIA Unternehmensmodell</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fadeInUp { animation: fadeInUp 0.6s ease-out forwards; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+// NVIDIA Unternehmensmodell Website
+
+// Jensen Huang Bild
+const jensenImage = 'data:image/webp;base64,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';
+
+// 3D Sphere Wheel Component
+const SphereWheel3D = () => {
+  const containerRef = useRef(null);
+  
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const container = containerRef.current;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    
+    // Scene
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+    camera.position.z = 6;
+    
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(width, height);
+    renderer.setClearColor(0x000000, 0);
+    container.appendChild(renderer.domElement);
+    
+    // Center Cube (NVIDIA)
+    const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const cubeMaterial = new THREE.MeshPhongMaterial({ 
+      color: 0x76B900,
+      emissive: 0x76B900,
+      emissiveIntensity: 0.3,
+      shininess: 100
+    });
+    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    scene.add(cube);
+    
+    // Wireframe around cube
+    const wireframeGeometry = new THREE.BoxGeometry(1.3, 1.3, 1.3);
+    const wireframeMaterial = new THREE.MeshBasicMaterial({ 
+      color: 0x76B900,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.4
+    });
+    const wireframe = new THREE.Mesh(wireframeGeometry, wireframeMaterial);
+    scene.add(wireframe);
+    
+    // Orbiting Spheres Group
+    const orbitGroup = new THREE.Group();
+    scene.add(orbitGroup);
+    
+    // 5 Spheres for Umweltsphären
+    const sphereColors = [
+      0x76B900, // Tech - NVIDIA Green
+      0x00D4AA, // Öko - Türkis
+      0xFF6B6B, // Recht - Rot
+      0x4ECDC4, // Umwelt - Cyan
+      0x9B59B6  // Sozial - Lila
+    ];
+    
+    const sphereGeometry = new THREE.SphereGeometry(0.3, 32, 32);
+    const spheres = [];
+    
+    sphereColors.forEach((color, i) => {
+      const material = new THREE.MeshPhongMaterial({ 
+        color: color,
+        emissive: color,
+        emissiveIntensity: 0.2,
+        shininess: 100
+      });
+      const sphere = new THREE.Mesh(sphereGeometry, material);
+      const angle = (i / 5) * Math.PI * 2;
+      sphere.position.x = Math.cos(angle) * 2.2;
+      sphere.position.z = Math.sin(angle) * 2.2;
+      sphere.userData = { angle: angle, baseY: 0 };
+      orbitGroup.add(sphere);
+      spheres.push(sphere);
+    });
+    
+    // Orbit ring
+    const ringGeometry = new THREE.TorusGeometry(2.2, 0.02, 16, 100);
+    const ringMaterial = new THREE.MeshBasicMaterial({ 
+      color: 0x76B900,
+      transparent: true,
+      opacity: 0.3
+    });
+    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+    ring.rotation.x = Math.PI / 2;
+    scene.add(ring);
+    
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambientLight);
+    
+    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+    pointLight.position.set(5, 5, 5);
+    scene.add(pointLight);
+    
+    // Animation
+    let animationId;
+    const animate = () => {
+      animationId = requestAnimationFrame(animate);
+      
+      cube.rotation.x += 0.005;
+      cube.rotation.y += 0.01;
+      wireframe.rotation.x -= 0.003;
+      wireframe.rotation.y -= 0.007;
+      
+      orbitGroup.rotation.y += 0.008;
+      
+      spheres.forEach((sphere, i) => {
+        sphere.position.y = Math.sin(Date.now() * 0.002 + i) * 0.3;
+      });
+      
+      renderer.render(scene, camera);
+    };
+    animate();
+    
+    return () => {
+      cancelAnimationFrame(animationId);
+      container.removeChild(renderer.domElement);
+      renderer.dispose();
+    };
+  }, []);
+  
+  return <div ref={containerRef} className="w-48 h-48 mx-auto" />;
+};
+
+function NvidiaUnternehmensmodell() {
+  const [activeSection, setActiveSection] = useState('home');
+  const [activeSphere, setActiveSphere] = useState(null);
+  const [activeStakeholder, setActiveStakeholder] = useState(null);
+  const [activeTab, setActiveTab] = useState('leistung');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Click outside schliesst Menü
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (isMenuOpen && !e.target.closest('nav')) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isMenuOpen]);
+
+  // Scroll to top bei Seitenwechsel
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activeSection]);
+
+  // Daten
+  const umweltsphaeren = [
+    {
+      id: 'tech',
+      name: 'Technologisch',
+      icon: 'T',
+      color: '#76B900',
+      beispiel: 'AI-Boom & GPU-Revolution',
+      details: 'Umsatzwachstum von $26 Mrd. (2023) auf $130.5 Mrd. (2025) – 114% Wachstum durch explodierende Nachfrage nach Data Center GPUs für KI-Training.',
+      stat: '+114%',
+      statLabel: 'Umsatzwachstum'
+    },
+    {
+      id: 'oeko',
+      name: 'Ökonomisch',
+      icon: 'Ö',
+      color: '#00D4AA',
+      beispiel: 'Börsen-Rekorde',
+      details: 'Erste Firma weltweit mit über $4 Trillion Marktkapitalisierung. 10:1 Aktiensplit im Juni 2024 machte Aktien zugänglicher.',
+      stat: '$4T+',
+      statLabel: 'Marktwert'
+    },
+    {
+      id: 'recht',
+      name: 'Rechtlich',
+      icon: 'R',
+      color: '#FF6B6B',
+      beispiel: 'US-China Exportrestriktionen',
+      details: 'H100/A100 Chips für China verboten. $5.5 Mrd. Verlust durch H20-Exportbeschränkungen (April 2025). Spezielle China-Chips entwickelt.',
+      stat: '-$5.5B',
+      statLabel: 'Umsatzverlust'
+    },
+    {
+      id: 'umwelt',
+      name: 'Ökologisch',
+      icon: 'U',
+      color: '#4ECDC4',
+      beispiel: 'Energieverbrauch & Nachhaltigkeit',
+      details: '100% erneuerbare Energie seit 2025 erreicht. Blackwell-Chips sind 25x energieeffizienter als Vorgänger. Liquid Cooling in Rechenzentren.',
+      stat: '100%',
+      statLabel: 'Erneuerbare Energie'
+    },
+    {
+      id: 'sozial',
+      name: 'Sozial',
+      icon: 'S',
+      color: '#9B59B6',
+      beispiel: 'Fachkräfte & Arbeitskultur',
+      details: 'Top-5 Arbeitgeber (Fortune 100 Best Companies 2025). 1/5 der Mitarbeiter sind über 10 Jahre dabei. Flexible Arbeitszeiten und Weiterbildung.',
+      stat: 'Top 5',
+      statLabel: 'Arbeitgeber-Ranking'
+    }
+  ];
+
+  const stakeholder = [
+    {
+      id: 'kunden',
+      name: 'Kunden',
+      icon: 'K',
+      beispiel: 'Microsoft kaufte 485\'000 H100-Chips (2024)',
+      anspruch: 'Leistungsfähige, verfügbare GPUs für AI-Training und Inferenz'
+    },
+    {
+      id: 'aktionaere',
+      name: 'Aktionäre',
+      icon: 'A',
+      beispiel: 'Vanguard Group (8.9%), BlackRock (7.8%)',
+      anspruch: 'Rendite, Dividenden (+150% Erhöhung 2024), Kurssteigerung'
+    },
+    {
+      id: 'mitarbeiter',
+      name: 'Mitarbeiter',
+      icon: 'M',
+      beispiel: '30\'000+ Angestellte weltweit',
+      anspruch: 'Faire Löhne, Weiterbildung, flexible Arbeitszeiten'
+    },
+    {
+      id: 'lieferanten',
+      name: 'Lieferanten',
+      icon: 'L',
+      beispiel: 'TSMC (Taiwan) produziert alle Chips',
+      anspruch: 'Langfristige Aufträge, planbare Produktion, faire Preise'
+    },
+    {
+      id: 'staat',
+      name: 'Staat',
+      icon: 'St',
+      beispiel: 'US Commerce Department',
+      anspruch: 'Einhaltung Exportgesetze, Steuern, nationale Sicherheit'
+    },
+    {
+      id: 'konkurrenz',
+      name: 'Konkurrenz',
+      icon: 'Ko',
+      beispiel: 'AMD, Intel, Huawei (China)',
+      anspruch: 'Fairer Wettbewerb, Einhaltung von Marktregeln'
+    },
+    {
+      id: 'gesellschaft',
+      name: 'Gesellschaft',
+      icon: 'G',
+      beispiel: 'Umweltorganisationen, Öffentlichkeit',
+      anspruch: 'Nachhaltigkeit, verantwortungsvolle AI-Entwicklung'
+    }
+  ];
+
+  const coreValues = [
+    { name: 'Innovation', icon: '01', desc: 'Ständige technologische Durchbrüche von GPU-Entwicklung bis AI-Computing' },
+    { name: 'Excellence', icon: '02', desc: 'Höchste Standards bei Produktqualität, Forschung und Kundenservice' },
+    { name: 'Speed/Agility', icon: '03', desc: 'Schnelle, entschlossene Reaktion auf Markttrends und Kundenbedürfnisse' },
+    { name: 'Transparency', icon: '04', desc: 'Offene Kommunikation und konstruktives Feedback für Vertrauen und Zuverlässigkeit' }
+  ];
+
+  const zielbeziehungen = [
+    {
+      typ: 'konflikt',
+      label: 'Zielkonflikt',
+      color: '#FF6B6B',
+      icon: '✕',
+      items: [
+        {
+          title: 'Aktionäre vs. China-Kunden',
+          desc: 'Aktionäre wollen maximalen Umsatz – US-Exportverbote reduzieren Umsatz um $5.5 Mrd.'
+        },
+        {
+          title: 'Umwelt vs. Wachstum',
+          desc: 'Mehr GPUs = mehr Stromverbrauch. AI könnte bis 2030 3.5% des Weltstroms verbrauchen.'
+        }
+      ]
+    },
+    {
+      typ: 'harmonie',
+      label: 'Zielharmonie',
+      color: '#76B900',
+      icon: '=',
+      items: [
+        {
+          title: 'Kunden + Aktionäre',
+          desc: 'Hohe Nachfrage nach AI-Chips führt zu zufriedenen Kunden UND steigenden Aktienkursen.'
+        }
+      ]
+    },
+    {
+      typ: 'neutral',
+      label: 'Zielneutralität',
+      color: '#888',
+      icon: '–',
+      items: [
+        {
+          title: 'Mitarbeiter + Lieferanten',
+          desc: 'Mitarbeiter-Weiterbildung hat keinen direkten Einfluss auf TSMC-Lieferbeziehung.'
+        }
+      ]
+    }
+  ];
+
+  const konzept = {
+    leistung: {
+      title: 'Leistungswirtschaftliches Konzept',
+      icon: 'L',
+      ziele: [
+        'Marktführer AI-GPUs mit 90% Marktanteil',
+        'Expansion Data Center & Automotive',
+        '8-10 Mio. GPUs pro Jahr produzieren'
+      ],
+      mittel: [
+        'GPU-Architekturen: Blackwell, Hopper, Ada Lovelace',
+        'CUDA Software-Plattform (Ökosystem-Lock-in)',
+        '30\'000+ hochqualifizierte Mitarbeiter'
+      ],
+      verfahren: [
+        'Fabless-Modell: Design in-house, Produktion bei TSMC',
+        'Vertrieb über Cloud-Provider (AWS, Azure, Google)',
+        'Direktverkauf an Unternehmen und Forschung'
+      ]
+    },
+    finanzen: {
+      title: 'Finanzwirtschaftliches Konzept',
+      icon: 'F',
+      ziele: [
+        '$130+ Mrd. Jahresumsatz',
+        '75% Bruttomarge halten',
+        'Eigenkapitalrendite >30%'
+      ],
+      mittel: [
+        'Hoher Eigenkapitalanteil',
+        '$33.7 Mrd. für Aktienrückkäufe (2025)',
+        'Starker operativer Cashflow'
+      ],
+      verfahren: [
+        'Reinvestition in R&D ($8 Mrd./Jahr)',
+        'Dividenden + Buybacks für Aktionäre',
+        'Strategische Akquisitionen (z.B. Mellanox)'
+      ]
+    },
+    soziales: {
+      title: 'Sozialwirtschaftliches Konzept',
+      icon: 'S',
+      ziele: [
+        'Top-5 Arbeitgeber weltweit bleiben',
+        '100% erneuerbare Energie',
+        'Verantwortungsvolle AI-Entwicklung'
+      ],
+      mittel: [
+        'Weiterbildungsbudget für alle Mitarbeiter',
+        'Nachhaltigkeitsteam & ESG-Reporting',
+        'NVIDIA Foundation (>$12 Mrd.)'
+      ],
+      verfahren: [
+        'Flexible Arbeitszeiten, Remote-Work',
+        'Scope 1+2 Net-Zero erreicht',
+        'Partnerschaften mit Universitäten'
+      ]
+    }
+  };
+
+  // Navigation
+  const NavItem = ({ id, label }) => (
+    <button
+      onClick={() => setActiveSection(id)}
+      className={`px-4 py-2 text-sm font-medium transition-all duration-300 relative
+        ${activeSection === id ? 'text-white' : 'text-gray-400 hover:text-white'}`}
+    >
+      {label}
+      {activeSection === id && (
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-500" 
+             style={{ backgroundColor: '#76B900' }} />
+      )}
+    </button>
+  );
+
+  // Hero Section
+  const HeroSection = () => (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black">
+        <div className="absolute inset-0 opacity-30">
+          {[...Array(50)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full bg-green-500"
+              style={{
+                width: Math.random() * 4 + 1 + 'px',
+                height: Math.random() * 4 + 1 + 'px',
+                left: Math.random() * 100 + '%',
+                top: Math.random() * 100 + '%',
+                animation: `pulse ${Math.random() * 3 + 2}s infinite`,
+                animationDelay: Math.random() * 2 + 's',
+                backgroundColor: '#76B900'
+              }}
+            />
+          ))}
+        </div>
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 opacity-10"
+             style={{
+               backgroundImage: 'linear-gradient(#76B900 1px, transparent 1px), linear-gradient(90deg, #76B900 1px, transparent 1px)',
+               backgroundSize: '50px 50px'
+             }} />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 text-center px-6 max-w-6xl mx-auto">
+        {/* NVIDIA Schriftzug mit Glow */}
+        <div className="mb-6">
+          <h1 className="text-7xl md:text-9xl font-black tracking-tight"
+              style={{ 
+                color: '#76B900',
+                textShadow: '0 0 40px rgba(118, 185, 0, 0.5), 0 0 80px rgba(118, 185, 0, 0.3)'
+              }}>
+            NVIDIA
+          </h1>
+        </div>
+
+        <h2 className="text-3xl md:text-5xl font-bold mb-6">
+          <span style={{ color: '#76B900' }}>Unternehmensmodell</span>
+        </h2>
+        
+        <p className="text-xl md:text-2xl text-gray-300 mb-4 font-light">
+          "Bring superhuman capabilities to every human, in every industry"
+        </p>
+        <p className="text-lg text-gray-500 mb-12 italic">
+          – Jensen Huang, CEO & Gründer
+        </p>
+
+        {/* Stats Bar */}
+        <div className="flex flex-wrap justify-center gap-8 mb-12">
+          {[
+            { value: '$130.5B', label: 'Umsatz 2025' },
+            { value: '90%', label: 'AI-GPU Marktanteil' },
+            { value: '$4T+', label: 'Marktwert' },
+            { value: '30\'000+', label: 'Mitarbeiter' }
+          ].map((stat, i) => (
+            <div key={i} className="text-center px-6 py-4 bg-white/5 rounded-xl backdrop-blur-sm
+                                    border border-white/10 hover:border-green-500/50 transition-all duration-300"
+                 style={{ '--hover-border': '#76B900' }}>
+              <div className="text-3xl font-bold mb-1" style={{ color: '#76B900' }}>{stat.value}</div>
+              <div className="text-sm text-gray-400">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={() => setActiveSection('unternehmen')}
+          className="px-8 py-4 text-lg font-semibold rounded-lg transition-all duration-300
+                     hover:scale-105 hover:shadow-2xl"
+          style={{ 
+            backgroundColor: '#76B900',
+            boxShadow: '0 0 30px rgba(118, 185, 0, 0.3)'
+          }}
+        >
+          Mehr erfahren
+        </button>
+      </div>
+    </section>
+  );
+
+  // Unternehmen Section
+  const UnternehmenSection = () => (
+    <section className="min-h-screen py-20 px-6 bg-gradient-to-b from-black to-gray-900">
+      <div className="max-w-7xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">
+          Das <span style={{ color: '#76B900' }}>Unternehmen</span>
+        </h2>
+        <p className="text-gray-400 text-center mb-16 text-lg">
+          Von der Garage zum wertvollsten Unternehmen der Welt
+        </p>
+
+        {/* Vision & Mission */}
+        <div className="grid md:grid-cols-2 gap-8 mb-16">
+          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 p-8 rounded-2xl border border-gray-700/50
+                          hover:border-green-500/30 transition-all duration-500">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#76B900' }}>
+              <span className="text-xl font-bold text-black">M</span>
+            </div>
+            <h3 className="text-2xl font-bold mb-4" style={{ color: '#76B900' }}>Mission</h3>
+            <p className="text-xl text-gray-300 italic">
+              "Bring superhuman capabilities to every human, in every industry"
+            </p>
+            <p className="text-gray-500 mt-4">
+              Übermenschliche Fähigkeiten für jeden Menschen, in jeder Branche ermöglichen.
+            </p>
+          </div>
+          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 p-8 rounded-2xl border border-gray-700/50
+                          hover:border-green-500/30 transition-all duration-500">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#76B900' }}>
+              <span className="text-xl font-bold text-black">V</span>
+            </div>
+            <h3 className="text-2xl font-bold mb-4" style={{ color: '#76B900' }}>Vision</h3>
+            <p className="text-xl text-gray-300 italic">
+              "Enable a world where everyone can experience the power of AI"
+            </p>
+            <p className="text-gray-500 mt-4">
+              Eine Welt ermöglichen, in der jeder die Kraft der KI erleben kann.
+            </p>
+          </div>
+        </div>
+
+        {/* Core Values */}
+        <div className="mb-16">
+          <h3 className="text-2xl font-bold text-center mb-8">Core Values</h3>
+          <div className="grid md:grid-cols-4 gap-6">
+            {coreValues.map((value, i) => (
+              <div key={i} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 p-6 rounded-2xl 
+                                      border border-gray-700/50 hover:border-green-500/30 transition-all duration-500
+                                      text-center">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" 
+                     style={{ backgroundColor: '#76B900' }}>
+                  <span className="text-sm font-bold text-black">{value.icon}</span>
+                </div>
+                <h4 className="text-lg font-bold mb-2" style={{ color: '#76B900' }}>{value.name}</h4>
+                <p className="text-sm text-gray-400">{value.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Jensen Huang Card */}
+        <div className="bg-gradient-to-r from-gray-800/80 to-gray-900/80 rounded-3xl p-8 md:p-12 
+                        border border-gray-700/50 backdrop-blur-sm">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="w-48 h-48 rounded-full overflow-hidden border-4"
+                 style={{ borderColor: 'rgba(118, 185, 0, 0.5)' }}>
+              <img src={jensenImage} alt="Jensen Huang" className="w-full h-full object-cover" />
+            </div>
+            <div className="flex-1 text-center md:text-left">
+              <h3 className="text-3xl font-bold mb-2">Jensen Huang</h3>
+              <p className="text-lg mb-4" style={{ color: '#76B900' }}>CEO, Präsident & Mitgründer</p>
+              <p className="text-gray-400 mb-4">
+                Gründete NVIDIA 1993 in einem Denny's Restaurant mit Chris Malachowsky und Curtis Priem. 
+                Unter seiner Führung wurde NVIDIA zum wertvollsten Unternehmen der Welt.
+              </p>
+              <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+                <div className="px-4 py-2 bg-white/5 rounded-lg">
+                  <span className="text-sm text-gray-400">Vermögen: </span>
+                  <span className="font-bold" style={{ color: '#76B900' }}>$162 Mrd.</span>
+                </div>
+                <div className="px-4 py-2 bg-white/5 rounded-lg">
+                  <span className="text-sm text-gray-400">Anteil: </span>
+                  <span className="font-bold" style={{ color: '#76B900' }}>~3.8%</span>
+                </div>
+                <div className="px-4 py-2 bg-white/5 rounded-lg">
+                  <span className="text-sm text-gray-400">CEO seit: </span>
+                  <span className="font-bold" style={{ color: '#76B900' }}>1993</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Timeline */}
+        <div className="mt-16">
+          <h3 className="text-2xl font-bold text-center mb-8">Meilensteine</h3>
+          <div className="relative">
+            <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gray-700" />
+            {[
+              { year: '1993', event: 'Gründung in San Jose, Kalifornien' },
+              { year: '1999', event: 'Börsengang (IPO) an der NASDAQ' },
+              { year: '2006', event: 'CUDA-Plattform revolutioniert GPU-Computing' },
+              { year: '2020', event: 'AI-Boom beginnt, Data Center explodiert' },
+              { year: '2024', event: 'Erstes Unternehmen mit $3T+ Marktwert' },
+              { year: '2025', event: 'Erreicht $4 Trillion Marktwert' }
+            ].map((item, i) => (
+              <div key={i} className={`flex items-center mb-8 ${i % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}`}>
+                <div className={`w-5/12 ${i % 2 === 0 ? 'text-right pr-8' : 'text-left pl-8'}`}>
+                  <div className="text-2xl font-bold" style={{ color: '#76B900' }}>{item.year}</div>
+                  <div className="text-gray-400">{item.event}</div>
+                </div>
+                <div className="w-2/12 flex justify-center">
+                  <div className="w-4 h-4 rounded-full border-2 bg-gray-900"
+                       style={{ borderColor: '#76B900' }} />
+                </div>
+                <div className="w-5/12" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  // Umweltsphären Section
+  const UmweltSection = () => (
+    <section className="min-h-screen py-20 px-6 bg-gradient-to-b from-gray-900 to-black">
+      <div className="max-w-7xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">
+          <span style={{ color: '#76B900' }}>Umweltsphären</span>
+        </h2>
+        <p className="text-gray-400 text-center mb-16 text-lg">
+          Externe Einflüsse auf NVIDIA und deren konkrete Auswirkungen
+        </p>
+
+        {/* Interactive Sphere Selector */}
+        <div className="relative mb-16">
+          {/* 3D Sphere Wheel */}
+          <div className="flex justify-center mb-8">
+            <SphereWheel3D />
+          </div>
+
+          {/* Sphere Buttons */}
+          <div className="flex flex-wrap justify-center gap-4">
+            {umweltsphaeren.map((sphere) => (
+              <button
+                key={sphere.id}
+                onClick={() => setActiveSphere(activeSphere === sphere.id ? null : sphere.id)}
+                className={`px-6 py-4 rounded-xl transition-all duration-300 border-2
+                           ${activeSphere === sphere.id 
+                             ? 'scale-105 shadow-lg' 
+                             : 'bg-gray-800/50 border-gray-700 hover:border-opacity-50'}`}
+                style={{
+                  borderColor: activeSphere === sphere.id ? sphere.color : undefined,
+                  backgroundColor: activeSphere === sphere.id ? `${sphere.color}20` : undefined,
+                  boxShadow: activeSphere === sphere.id ? `0 0 20px ${sphere.color}40` : undefined
+                }}
+              >
+                <span className="text-2xl mr-2">{sphere.icon}</span>
+                <span className="font-semibold">{sphere.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Active Sphere Detail */}
+        {activeSphere && (
+          <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 rounded-3xl p-8 
+                          border border-gray-700/50 backdrop-blur-sm animate-fadeIn">
+            {(() => {
+              const sphere = umweltsphaeren.find(s => s.id === activeSphere);
+              return (
+                <div className="flex flex-col md:flex-row gap-8">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-4 mb-4">
+                      <span className="text-5xl">{sphere.icon}</span>
+                      <div>
+                        <h3 className="text-3xl font-bold" style={{ color: sphere.color }}>
+                          {sphere.name}
+                        </h3>
+                        <p className="text-gray-400">{sphere.beispiel}</p>
+                      </div>
+                    </div>
+                    <p className="text-lg text-gray-300 leading-relaxed">
+                      {sphere.details}
+                    </p>
+                  </div>
+                  <div className="md:w-48 flex flex-col items-center justify-center p-6 
+                                  bg-black/30 rounded-2xl">
+                    <div className="text-5xl font-black mb-2" style={{ color: sphere.color }}>
+                      {sphere.stat}
+                    </div>
+                    <div className="text-sm text-gray-400 text-center">{sphere.statLabel}</div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* All Spheres Grid (when none selected) */}
+        {!activeSphere && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {umweltsphaeren.map((sphere, i) => (
+              <div
+                key={sphere.id}
+                onClick={() => setActiveSphere(sphere.id)}
+                className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 p-6 rounded-2xl 
+                           border border-gray-700/50 cursor-pointer
+                           hover:border-opacity-50 transition-all duration-300 hover:scale-102"
+                style={{ 
+                  animationDelay: `${i * 100}ms`,
+                  '--hover-border': sphere.color 
+                }}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-3xl">{sphere.icon}</span>
+                  <h3 className="text-xl font-bold" style={{ color: sphere.color }}>{sphere.name}</h3>
+                </div>
+                <p className="text-gray-400 mb-4">{sphere.beispiel}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-bold" style={{ color: sphere.color }}>{sphere.stat}</span>
+                  <span className="text-xs text-gray-500">{sphere.statLabel}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+
+  // Stakeholder Section
+  const StakeholderSection = () => (
+    <section className="min-h-screen py-20 px-6 bg-gradient-to-b from-black to-gray-900">
+      <div className="max-w-7xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">
+          <span style={{ color: '#76B900' }}>Anspruchsgruppen</span>
+        </h2>
+        <p className="text-gray-400 text-center mb-16 text-lg">
+          Wer beeinflusst NVIDIA und welche Ansprüche haben sie?
+        </p>
+
+        {/* Stakeholder Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          {stakeholder.map((sh, i) => (
+            <div
+              key={sh.id}
+              onClick={() => setActiveStakeholder(activeStakeholder === sh.id ? null : sh.id)}
+              className={`p-6 rounded-2xl cursor-pointer transition-all duration-300
+                         border-2 ${activeStakeholder === sh.id 
+                           ? 'border-green-500 bg-green-500/10 scale-105' 
+                           : 'border-gray-700/50 bg-gray-800/30 hover:border-gray-600'}`}
+              style={{
+                borderColor: activeStakeholder === sh.id ? '#76B900' : undefined
+              }}
+            >
+              <div className="text-4xl mb-4">{sh.icon}</div>
+              <h3 className="text-xl font-bold mb-2">{sh.name}</h3>
+              <p className="text-sm text-gray-400 mb-3">{sh.beispiel}</p>
+              {activeStakeholder === sh.id && (
+                <div className="mt-4 pt-4 border-t border-gray-700">
+                  <p className="text-sm font-semibold mb-1" style={{ color: '#76B900' }}>Anspruch:</p>
+                  <p className="text-gray-300">{sh.anspruch}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Zielbeziehungen */}
+        <h3 className="text-3xl font-bold text-center mb-8">Zielbeziehungen</h3>
+        <div className="grid md:grid-cols-3 gap-6">
+          {zielbeziehungen.map((ziel) => (
+            <div key={ziel.typ} className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/50">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="text-3xl">{ziel.icon}</span>
+                <h4 className="text-xl font-bold" style={{ color: ziel.color }}>{ziel.label}</h4>
+              </div>
+              {ziel.items.map((item, i) => (
+                <div key={i} className="mb-4 last:mb-0 p-4 bg-black/30 rounded-xl">
+                  <p className="font-semibold mb-1">{item.title}</p>
+                  <p className="text-sm text-gray-400">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+
+  // Strategie Section
+  const StrategieSection = () => (
+    <section className="min-h-screen py-20 px-6 bg-gradient-to-b from-gray-900 to-black">
+      <div className="max-w-7xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">
+          <span style={{ color: '#76B900' }}>Strategie & Konzept</span>
+        </h2>
+        <p className="text-gray-400 text-center mb-8 text-lg">
+          Vom Leitbild zur konkreten Umsetzung
+        </p>
+
+        {/* Strategy Flow */}
+        <div className="flex flex-wrap justify-center items-center gap-4 mb-16">
+          {['Leitbild', '→', 'Strategie', '→', 'Konzept'].map((item, i) => (
+            <div key={i} className={item === '→' ? 'text-2xl text-gray-600' : 
+                                    'px-6 py-3 bg-gray-800/50 rounded-xl border border-gray-700/50'}>
+              {item === '→' ? item : (
+                <span className="font-semibold">{item}</span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Strategie Statement */}
+        <div className="bg-gradient-to-r from-green-500/10 to-gray-800/50 rounded-3xl p-8 mb-16
+                        border border-green-500/20">
+          <h3 className="text-2xl font-bold mb-4" style={{ color: '#76B900' }}>NVIDIAs Strategie</h3>
+          <p className="text-lg text-gray-300 leading-relaxed">
+            Durch kontinuierliche Innovation bei GPU-Hardware und Software-Ökosystemen (CUDA) 
+            die führende Plattform für AI-Computing weltweit bleiben und dabei sowohl wirtschaftliches 
+            Wachstum als auch nachhaltige Technologie vorantreiben.
+          </p>
+        </div>
+
+        {/* Konzept Tabs */}
+        <div className="flex justify-center gap-4 mb-8">
+          {Object.entries(konzept).map(([key, val]) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300
+                         ${activeTab === key 
+                           ? 'text-black' 
+                           : 'bg-gray-800/50 text-gray-400 hover:text-white'}`}
+              style={{
+                backgroundColor: activeTab === key ? '#76B900' : undefined
+              }}
+            >
+              <span className="mr-2">{val.icon}</span>
+              {key.charAt(0).toUpperCase() + key.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {/* Active Konzept */}
+        <div className="bg-gray-800/50 rounded-3xl p-8 border border-gray-700/50">
+          <h3 className="text-2xl font-bold mb-8 text-center" style={{ color: '#76B900' }}>
+            {konzept[activeTab].title}
+          </h3>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { title: 'Ziele', items: konzept[activeTab].ziele, icon: 'Z' },
+              { title: 'Mittel', items: konzept[activeTab].mittel, icon: 'M' },
+              { title: 'Verfahren', items: konzept[activeTab].verfahren, icon: 'V' }
+            ].map((section) => (
+              <div key={section.title} className="bg-black/30 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#76B900' }}>
+                    <span className="text-sm font-bold text-black">{section.icon}</span>
+                  </div>
+                  <h4 className="text-xl font-bold">{section.title}</h4>
+                </div>
+                <ul className="space-y-3">
+                  {section.items.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span style={{ color: '#76B900' }}>▸</span>
+                      <span className="text-gray-300">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  // Nachhaltigkeit Section
+  const NachhaltigkeitSection = () => (
+    <section className="min-h-screen py-20 px-6 bg-gradient-to-b from-black to-gray-900">
+      <div className="max-w-7xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">
+          <span style={{ color: '#76B900' }}>Nachhaltigkeit</span>
+        </h2>
+        <p className="text-gray-400 text-center mb-16 text-lg">
+          Ökonomische, soziale und ökologische Zielsetzungen
+        </p>
+
+        {/* Three Pillars */}
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            {
+              title: 'Ökonomisch',
+              icon: 'Ö',
+              color: '#FFD700',
+              items: [
+                'Langfristiges Wachstum durch AI-Infrastruktur',
+                '$3-4 Trillion Markt bis 2030',
+                'Reinvestition in Forschung & Entwicklung',
+                'Nachhaltige Profitabilität (75% Marge)'
+              ]
+            },
+            {
+              title: 'Sozial',
+              icon: 'S',
+              color: '#76B900',
+              items: [
+                'Demokratisierung von AI ("AI für jeden")',
+                'NVIDIA Inception Programm für Startups',
+                'Bildungspartnerschaften mit Universitäten',
+                'NVIDIA Foundation (>$12 Mrd.)'
+              ]
+            },
+            {
+              title: 'Ökologisch',
+              icon: 'U',
+              color: '#4ECDC4',
+              items: [
+                '100% erneuerbare Energie erreicht (2025)',
+                'Blackwell-Chips 25x energieeffizienter',
+                'Liquid Cooling in Rechenzentren',
+                'Scope 1+2 Net-Zero erreicht'
+              ]
+            }
+          ].map((pillar) => (
+            <div key={pillar.title} 
+                 className="relative bg-gradient-to-b from-gray-800/50 to-gray-900/50 
+                            rounded-3xl p-8 border border-gray-700/50
+                            hover:border-opacity-50 transition-all duration-500"
+                 style={{ '--hover-border': pillar.color }}>
+              {/* Pillar Header */}
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" 
+                     style={{ backgroundColor: pillar.color }}>
+                  <span className="text-2xl font-bold text-black">{pillar.icon}</span>
+                </div>
+                <h3 className="text-2xl font-bold" style={{ color: pillar.color }}>
+                  {pillar.title}
+                </h3>
+              </div>
+              
+              {/* Items */}
+              <ul className="space-y-4">
+                {pillar.items.map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full mt-2" style={{ backgroundColor: pillar.color }} />
+                    <span className="text-gray-300">{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Decorative Element */}
+              <div className="absolute bottom-0 left-0 right-0 h-1 rounded-b-3xl"
+                   style={{ backgroundColor: pillar.color, opacity: 0.5 }} />
+            </div>
+          ))}
+        </div>
+
+        {/* Stats Banner */}
+        <div className="mt-16 bg-gradient-to-r from-green-500/10 via-gray-800/50 to-green-500/10 
+                        rounded-3xl p-8 border border-green-500/20">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            {[
+              { value: '100%', label: 'Erneuerbare Energie' },
+              { value: '25x', label: 'Energieeffizienz (Blackwell)' },
+              { value: '335t', label: 'E-Waste recycelt (2025)' },
+              { value: '0', label: 'Scope 2 Emissionen' }
+            ].map((stat, i) => (
+              <div key={i}>
+                <div className="text-4xl font-black mb-2" style={{ color: '#76B900' }}>{stat.value}</div>
+                <div className="text-sm text-gray-400">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  // Quellen Section
+  const QuellenSection = () => (
+    <section className="min-h-screen py-20 px-6 bg-gradient-to-b from-gray-900 to-black">
+      <div className="max-w-5xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">
+          <span style={{ color: '#76B900' }}>Quellenverzeichnis</span>
+        </h2>
+        <p className="text-gray-400 text-center mb-16 text-lg">
+          Alle verwendeten Quellen für dieses Projekt
+        </p>
+
+        {/* Quellen nach Kategorie */}
+        {[
+          {
+            kategorie: 'Offizielle NVIDIA Quellen',
+            icon: '01',
+            quellen: [
+              { title: 'NVIDIA Corporate Sustainability', url: 'nvidia.com/en-us/sustainability/', info: 'Nachhaltigkeitsbericht & Umweltziele' },
+              { title: 'NVIDIA Investor Relations', url: 'investor.nvidia.com', info: 'Finanzdaten, Jahresberichte, SEC Filings' },
+              { title: 'NVIDIA Sustainability Report FY2024', url: 'nvidia.com/sustainability-report', info: 'Detaillierter Nachhaltigkeitsbericht' }
+            ]
+          },
+          {
+            kategorie: 'Finanznachrichten & Analysen',
+            icon: '02',
+            quellen: [
+              { title: 'CNBC - Nvidia earnings Q4 2025', url: 'cnbc.com', info: 'Quartalszahlen & Umsatzentwicklung' },
+              { title: 'Reuters - Nvidia China restrictions', url: 'reuters.com', info: 'Exportbeschränkungen & China-Markt' },
+              { title: 'Bloomberg - Nvidia market cap', url: 'bloomberg.com', info: 'Marktkapitalisierung & Aktienkurs' },
+              { title: 'TechCrunch - Nvidia revenue', url: 'techcrunch.com', info: 'Umsatzrekorde & AI-Boom' }
+            ]
+          },
+          {
+            kategorie: 'Unternehmensanalysen',
+            icon: '03',
+            quellen: [
+              { title: 'DCF Modeling - NVIDIA Mission & Vision', url: 'dcfmodeling.com', info: 'Mission Statement Analyse' },
+              { title: 'Business Model Analyst', url: 'businessmodelanalyst.com', info: 'Geschäftsmodell & Strategie' },
+              { title: 'Forbes - Jensen Huang Net Worth', url: 'forbes.com', info: 'CEO Profil & Vermögen' },
+              { title: 'Wikipedia - Jensen Huang', url: 'en.wikipedia.org/wiki/Jensen_Huang', info: 'Biografie & Unternehmensgeschichte' }
+            ]
+          },
+          {
+            kategorie: 'Aktionärs- & Eigentümerstruktur',
+            icon: '04',
+            quellen: [
+              { title: 'Capital.com - NVIDIA Shareholders', url: 'capital.com', info: 'Grösste Aktionäre' },
+              { title: 'TipRanks - NVDA Ownership', url: 'tipranks.com', info: 'Institutionelle Investoren' },
+              { title: 'The Motley Fool - Nvidia Stock', url: 'fool.com', info: 'Aktienanalyse' }
+            ]
+          },
+          {
+            kategorie: 'Regulierung & Export',
+            icon: '05',
+            quellen: [
+              { title: 'NPR - US China chip restrictions', url: 'npr.org', info: 'Exportbeschränkungen Analyse' },
+              { title: 'Al Jazeera - Nvidia chip smuggling', url: 'aljazeera.com', info: 'Chip-Schmuggel Fälle' },
+              { title: 'TechRepublic - US blocks Nvidia', url: 'techrepublic.com', info: 'H20 Export-Ban Details' },
+              { title: 'Computer Weekly - China chip war', url: 'computerweekly.com', info: 'US-China Technologie-Konflikt' }
+            ]
+          },
+          {
+            kategorie: 'Nachhaltigkeit & Energie',
+            icon: '06',
+            quellen: [
+              { title: 'Data Center Dynamics', url: 'datacenterdynamics.com', info: '100% Renewable Energy' },
+              { title: 'The Sustainable Innovation', url: 'thesustainableinnovation.com', info: 'NVIDIA Nachhaltigkeitsstrategie' },
+              { title: 'NVIDIA Blogs - Energy Efficiency', url: 'blogs.nvidia.com', info: 'Energieeffizienz & Blackwell' }
+            ]
+          }
+        ].map((section, i) => (
+          <div key={i} className="mb-12">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#76B900' }}>
+                <span className="text-sm font-bold text-black">{section.icon}</span>
+              </div>
+              <h3 className="text-2xl font-bold" style={{ color: '#76B900' }}>{section.kategorie}</h3>
+            </div>
+            <div className="space-y-4">
+              {section.quellen.map((quelle, j) => (
+                <div key={j} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50
+                                        hover:border-green-500/30 transition-all duration-300">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                    <div>
+                      <h4 className="font-semibold text-white">{quelle.title}</h4>
+                      <p className="text-sm text-gray-400">{quelle.info}</p>
+                    </div>
+                    <div className="text-sm text-gray-500 font-mono">{quelle.url}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {/* Hinweis */}
+        <div className="mt-12 p-6 bg-gray-800/30 rounded-2xl border border-gray-700/50 text-center">
+          <p className="text-gray-400 text-sm">
+            Stand der Recherche: Dezember 2025<br />
+            Alle Angaben ohne Gewähr. Dieses Projekt dient ausschliesslich Bildungszwecken.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+
+  // Footer
+  const Footer = () => (
+    <footer className="bg-black border-t border-gray-800 py-12 px-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="text-center md:text-left">
+            <div className="text-3xl font-black mb-2" style={{ color: '#76B900' }}>NVIDIA</div>
+            <p className="text-gray-500">Unternehmensmodell Projekt</p>
+            <p className="text-gray-600 text-sm mt-2">W&G Unterricht - 2025</p>
+          </div>
+          
+          {/* Gruppenmitglieder */}
+          <div className="text-center">
+            <p className="text-gray-400 text-sm mb-2">Erstellt von</p>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+              <span className="text-white font-medium">Hammoudi, Rami</span>
+              <span className="text-gray-600">•</span>
+              <span className="text-white font-medium">Khachane, Feris</span>
+              <span className="text-gray-600">•</span>
+              <span className="text-white font-medium">Spielberger, Keanu</span>
+            </div>
+            <p className="text-sm mt-2" style={{ color: '#76B900' }}>Klasse AB25c</p>
+          </div>
+          
+          <div className="text-center md:text-right">
+            <p className="text-gray-400 mb-2">Quellen</p>
+            <p className="text-gray-600 text-sm">
+              nvidia.com, Reuters, CNBC, Bloomberg, Forbes
+            </p>
+          </div>
+        </div>
+        <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-600 text-sm">
+          © 2025 Schulprojekt - Alle Inhalte dienen Bildungszwecken
+        </div>
+      </div>
+    </footer>
+  );
+
+  return (
+    <div className="min-h-screen bg-black text-white font-sans">
+      {/* Custom Styles */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * {
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        @keyframes pulse {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.5); }
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInPage {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes bounce {
+          0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+          40% { transform: translateY(-15px) translateX(-50%); }
+          60% { transform: translateY(-7px) translateX(-50%); }
+        }
+        
+        @keyframes scrollPulse {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .animate-fadeInPage {
+          animation: fadeInPage 0.6s ease-out forwards;
+        }
+        
+        .animate-bounce {
+          animation: bounce 2s infinite;
+        }
+        
+        .animate-scrollPulse {
+          animation: scrollPulse 2s infinite;
+        }
+        
+        ::-webkit-scrollbar {
+          width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+          background: #111;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #76B900;
+          border-radius: 4px;
+        }
+      `}</style>
+
+      {/* Navigation */}
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300
+                      ${(scrolled || isMenuOpen) ? 'bg-black/95 backdrop-blur-md border-b border-gray-800' : 'bg-transparent'}`}>
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <button onClick={() => setActiveSection('home')} 
+                    className="text-2xl font-black hover:opacity-80 transition-opacity"
+                    style={{ color: '#76B900' }}>
+              NVIDIA
+            </button>
+
+            {/* Desktop Nav */}
+            <div className="hidden lg:flex items-center gap-2">
+              <NavItem id="home" label="Home" />
+              <NavItem id="unternehmen" label="Unternehmen" />
+              <NavItem id="umwelt" label="Umweltsphären" />
+              <NavItem id="stakeholder" label="Stakeholder" />
+              <NavItem id="strategie" label="Strategie" />
+              <NavItem id="nachhaltigkeit" label="Nachhaltigkeit" />
+              <NavItem id="quellen" label="Quellen" />
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button 
+              className="lg:hidden text-3xl text-white"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? '✕' : '☰'}
+            </button>
+          </div>
+
+          {/* Mobile Menu */}
+          {isMenuOpen && (
+            <div className="lg:hidden mt-4 pb-4 border-t border-gray-800 pt-4">
+              {['home', 'unternehmen', 'umwelt', 'stakeholder', 'strategie', 'nachhaltigkeit', 'quellen'].map((id) => (
+                <button
+                  key={id}
+                  onClick={() => { setActiveSection(id); setIsMenuOpen(false); }}
+                  className={`block w-full text-left px-4 py-3 rounded-lg mb-1
+                             ${activeSection === id ? 'bg-green-500/20 text-white' : 'text-gray-400'}`}
+                  style={{ backgroundColor: activeSection === id ? 'rgba(118, 185, 0, 0.2)' : undefined }}
+                >
+                  {id.charAt(0).toUpperCase() + id.slice(1)}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main key={activeSection} className="animate-fadeInPage">
+        {activeSection === 'home' && <HeroSection />}
+        {activeSection === 'unternehmen' && <UnternehmenSection />}
+        {activeSection === 'umwelt' && <UmweltSection />}
+        {activeSection === 'stakeholder' && <StakeholderSection />}
+        {activeSection === 'strategie' && <StrategieSection />}
+        {activeSection === 'nachhaltigkeit' && <NachhaltigkeitSection />}
+        {activeSection === 'quellen' && <QuellenSection />}
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
+
+    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(NvidiaUnternehmensmodell));
+  </script>
+</body>
+</html>
